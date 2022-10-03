@@ -15,11 +15,16 @@
     "clean": "gatsby clean"
   },
   "dependencies": {
+    "@postidigital/posti-components": "^28.0.0",
+    "@postidigital/posti-theme": "^3.0.1",
     "babel-plugin-styled-components": "^2.0.7",
     "gatsby": "^4.23.0",
+    "gatsby-plugin-direct-import": "^1.0.0",
     "gatsby-plugin-styled-components": "^5.23.0",
+    "gatsby-plugin-typescript": "^4.23.0",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
-    "styled-components": "^5.3.5"
+    "styled-components": "^5.3.5",
+    "use-onclickoutside": "^0.4.1"
   }
 }
