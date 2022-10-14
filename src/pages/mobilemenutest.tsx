@@ -1,16 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import {
   MobileMenu,
-  RootMenuItem,
-  CloseButton,
-  MenuHeaderTitle,
-  MenuServicePoints,
-  MobileMenuItem,
-  MenuStateWrapper,
-} from '@postidigital/posti-components/build/page-sections/MobileMenu'
-import { MobileMenuItemProps, MobileMenuProps, CloseButtonAria, CloseButtonAriasLabels } from '@postidigital/posti-components/build/page-sections/MobileMenu/MobileMenu.types'
-import { NavigationItemProps } from '@postidigital/posti-components/build/page-sections/TopBar/TopBar.types'
-import {
+  Button,
   ArchiveIcon,
   CartIcon,
   EnvelopeIcon,
@@ -20,18 +11,15 @@ import {
   PostcardIcon,
   SendParcelIcon,
   StampIcon,
-} from '@postidigital/posti-components/build/design-tokens/icons'
-import {
-  MenuContent,
   MenuHeader,
-  MenuHeaderButtons,
-  RootMenu,
-  MobileMenuLanguageSelection,
-  MenuContentGroup,
-} from '@postidigital/posti-components/build/page-sections/MobileMenu/MobileMenu.style'
-import Button from '@postidigital/posti-components'
-import { getParent, getSelectedItem } from '@postidigital/posti-components/build/page-sections/MobileMenu/util'
-import { handleNavItemClick, checkAriaCurrent } from '@postidigital/posti-components/build/page-sections/Navigation/navigationItemUtils'
+  NavigationItemProps,
+  MobileMenuItemProps,
+  MobileMenuProps,
+  CloseButtonAria,
+  CloseButtonAriasLabels,
+} from '@postidigital/posti-components'
+import { getParent, getSelectedItem } from './util'
+// import { handleNavItemClick, checkAriaCurrent } from '../Navigation/navigationItemUtils'
 import useOnClickOutside from 'use-onclickoutside'
 
 const disabledControl = { control: 'disabled' }
@@ -157,249 +145,6 @@ const navigationState = {
   rootMenuItems: TOPBAR_OPTIONS,
 }
 
-const meta: Meta = {
-  title: 'Page Sections/Mobile Menu',
-  component: MobileMenu,
-  subcomponents: { MobileMenuItem },
-  parameters: {
-    docs: {
-      source: {
-        language: 'jsx',
-        type: 'code',
-      },
-    },
-    jest: ['MobileMenu'],
-  },
-  args: {
-    hasServicePointsItem: true,
-    hasLanguageSelection: true,
-    hasRootLevelItems: true,
-    isBusiness: false,
-    handleOutsideClick: (e) => {
-      console.log('outside click')
-    },
-    servicePointsItem: {
-      href: '#',
-      title: 'Service Points',
-    },
-  },
-  argTypes: {
-    closeButtonAriaLabel: {
-      control: { type: 'select' },
-      options: Object.values(CloseButtonAria),
-    },
-    isBusiness: { control: 'boolean' },
-    hasServicePointsItem: { control: 'boolean' },
-    hasLanguageSelection: { control: 'boolean' },
-    hasRootLevelItems: { control: 'boolean' },
-    handleOutsideClick: disabledControl,
-    currentPage: disabledControl,
-    servicePointsItem: disabledControl,
-    openMenu: disabledControl,
-  },
-}
-export default meta
-
-export const Default: Story<
-  MobileMenuProps & {
-    closeButtonAriaLabel: keyof typeof CloseButtonAria
-    hasServicePointsItem: boolean
-    hasLanguageSelection: boolean
-    hasRootLevelItems: boolean
-    servicePointsItem: NavigationItemProps
-  }
-> = (args) => {
-  const [locale, setLocale] = useState('EN')
-  const [navState, setNavigationState] = useState(navigationState)
-  const selectedItem = useRef(getSelectedItem(topLevelMenuItems))
-  const [selectedOption, setSelectedOption] = useState<MobileMenuItemProps>(selectedItem.current)
-  const buttonRef = useRef<HTMLButtonElement>()
-  const closeButtonRef = useRef<HTMLButtonElement>()
-  const rootRef = useRef<HTMLDivElement>()
-
-  const onMenuItemSelect = (option: MobileMenuItemProps) => {
-    setSelectedOption(option)
-  }
-
-  const handleBackButtonClick = () => {
-    const parentSelectedItem = getParent(navState.topLevelMenuItems, selectedItem.current.parentId)
-    const updatedNavState = { ...navState }
-    updatedNavState.topLevelMenuItems.forEach(function iter(item) {
-      item.selected = false
-      if (parentSelectedItem && parentSelectedItem.id === item.id) {
-        parentSelectedItem.selected = true
-      }
-      Array.isArray(item.children) && item.children.forEach(iter)
-    })
-    if (parentSelectedItem) {
-      selectedItem.current = parentSelectedItem
-    } else {
-      selectedItem.current = null
-    }
-    setNavigationState(updatedNavState)
-  }
-
-  const handleClickLanguageSelection = (locale: string) => {
-    setLocale(locale)
-  }
-
-  const handleMenuArrowClick = (item: MobileMenuItemProps) => {
-    selectedItem.current = item
-    const updatedNavState = { ...navState }
-    updatedNavState.topLevelMenuItems.forEach(function iter(item) {
-      item.selected = item.id === item.id
-      Array.isArray(item.children) && item.children.forEach(iter)
-    })
-    setNavigationState(updatedNavState)
-  }
-
-  const MenuWrapper = ({ isOpen, setIsOpen }) => {
-    useEffect(() => {
-      if (!isOpen) {
-        buttonRef.current?.focus()
-      } else {
-        closeButtonRef.current?.focus()
-      }
-    }, [isOpen])
-
-    const handleClose = (e) => {
-      setIsOpen(false)
-      e.stopPropagation()
-    }
-
-    const handleOpen = (e) => {
-      setIsOpen(true)
-      e.stopPropagation()
-    }
-
-    const handleOutsideClick = (e: Event) => {
-      setIsOpen(false)
-      args.handleOutsideClick
-    }
-
-    useOnClickOutside(rootRef, handleOutsideClick)
-
-    return (
-      <div ref={rootRef}>
-        <MobileMenu {...args}>
-          <MenuHeader>
-            <MenuHeaderButtons>
-              <CloseButton
-                ref={closeButtonRef}
-                onClick={handleClose}
-                aria-label={CloseButtonAriasLabels[args.closeButtonAriaLabel]}
-              />
-              <RootMenu>
-                {navigationState.rootMenuItems.map((item, index) => {
-                  return (
-                    <RootMenuItem
-                      isActive={item.active}
-                      key={`${item.title}-${index}`}
-                      href={item.href}
-                      onClick={(e) => handleNavItemClick(item, e)}
-                      aria-current={checkAriaCurrent(item, navigationState.rootPage)}
-                      title={item.title}
-                    />
-                  )
-                })}
-              </RootMenu>
-            </MenuHeaderButtons>
-            {selectedItem.current && (
-              <MenuHeaderTitle onClick={handleBackButtonClick} aria-label="Go back">
-                {selectedItem.current.label}
-              </MenuHeaderTitle>
-            )}
-          </MenuHeader>
-
-          <MenuContent>
-            <MenuContentGroup>
-              {!selectedItem.current
-                ? navigationState.topLevelMenuItems.map((opt) => {
-                    return (
-                      <MobileMenuItem
-                        aria-label={opt.label}
-                        id={opt.id}
-                        key={opt.id}
-                        value={opt.value}
-                        onSelect={() => onMenuItemSelect(opt)}
-                        onButtonClick={() => handleMenuArrowClick(opt)}
-                        icon={opt.icon}
-                        redirectsToSubMenu={opt.redirectsToSubMenu}
-                        selected={selectedOption?.value === opt.value}
-                        chevronAriaLabel={opt.chevronAriaLabel}
-                        label={opt.label}
-                      />
-                    )
-                  })
-                : [selectedItem.current].map((validOption) =>
-                    validOption.children.map((child) => {
-                      return (
-                        <MobileMenuItem
-                          aria-label={child.label}
-                          id={child.id}
-                          key={child.id}
-                          value={child.value}
-                          onSelect={() => onMenuItemSelect(child)}
-                          onButtonClick={() => handleMenuArrowClick(child)}
-                          icon={child.icon}
-                          selected={selectedOption?.value === child.value}
-                          redirectsToSubMenu={child.redirectsToSubMenu}
-                          chevronAriaLabel={child.chevronAriaLabel}
-                          label={child.label}
-                        />
-                      )
-                    })
-                  )}
-            </MenuContentGroup>
-            {args.hasRootLevelItems && (
-              <MenuContentGroup>
-                {ROOT_OPTIONS.map((opt) => {
-                  return (
-                    <MobileMenuItem
-                      key={opt.id}
-                      id={opt.id}
-                      value={opt.value}
-                      selected={selectedOption?.value === opt.value}
-                      icon={opt.icon}
-                      onSelect={() => onMenuItemSelect(opt)}
-                      label={opt.label}
-                    />
-                  )
-                })}
-              </MenuContentGroup>
-            )}
-            {(args.hasServicePointsItem || args.hasLanguageSelection) && (
-              <MenuContentGroup>
-                {args.hasServicePointsItem && (
-                  <MenuServicePoints title={args.servicePointsItem.title} href={args.servicePointsItem.href} />
-                )}
-                {args.hasLanguageSelection && (
-                  <MobileMenuLanguageSelection
-                    supportedLanguages={supportedLanguages}
-                    languageLabel="Language"
-                    language={locale}
-                    onLanguageToggle={handleClickLanguageSelection}
-                    aria-label="Selection of languages"
-                  />
-                )}
-              </MenuContentGroup>
-            )}
-          </MenuContent>
-        </MobileMenu>
-        <Button ref={buttonRef} size="sm" onClick={handleOpen}>
-          Open menu
-        </Button>
-      </div>
-    )
-  }
-
-  return (
-    <MenuStateWrapper>
-      {({ isOpen, setIsOpen }) => <MenuWrapper isOpen={isOpen} setIsOpen={setIsOpen} />}
-    </MenuStateWrapper>
-  )
-}
-
 const preSelectedTopLevelMenuItems: MobileMenuItemProps[] = [
   {
     id: '0',
@@ -439,15 +184,7 @@ const preSelectedNavigationState = {
   rootMenuItems: TOPBAR_OPTIONS,
 }
 
-export const PreSelectedItemMobileMenu: Story<
-  MobileMenuProps & {
-    closeButtonAriaLabel: keyof typeof CloseButtonAria
-    hasServicePointsItem: boolean
-    hasLanguageSelection: boolean
-    hasRootLevelItems: boolean
-    servicePointsItem: NavigationItemProps
-  }
-> = (args) => {
+const PreSelectedItemMobileMenu = (args) => {
   const [locale, setLocale] = useState('EN')
   const [navState, setNavigationState] = useState(preSelectedNavigationState)
   const selectedItem = useRef(getSelectedItem(preSelectedTopLevelMenuItems))
@@ -522,39 +259,40 @@ export const PreSelectedItemMobileMenu: Story<
       <div ref={rootRef}>
         <MobileMenu {...args}>
           <MenuHeader>
-            <MenuHeaderButtons>
-              <CloseButton
+            <MobileMenu.HeaderButtons>
+              <MobileMenu.CloseButton
                 ref={closeButtonRef}
                 onClick={handleClose}
-                aria-label={CloseButtonAriasLabels[args.closeButtonAriaLabel]}
+                // aria-label={CloseButtonAriasLabels[args.closeButtonAriaLabel]}
               />
-              <RootMenu>
+              <MobileMenu.RootMenu>
                 {navigationState.rootMenuItems.map((item, index) => {
                   return (
-                    <RootMenuItem
+                    <MobileMenu.RootMenuItem
                       isActive={item.active}
                       key={`${item.title}-${index}`}
                       href={item.href}
-                      onClick={(e) => handleNavItemClick(item, e)}
-                      aria-current={checkAriaCurrent(item, navigationState.rootPage)}
+                      // onClick={(e) => handleNavItemClick(item, e)}
+                      onClick={() => {}}
+                      // aria-current={checkAriaCurrent(item, navigationState.rootPage)}
                       title={item.title}
                     />
                   )
                 })}
-              </RootMenu>
-            </MenuHeaderButtons>
+              </MobileMenu.RootMenu>
+            </MobileMenu.HeaderButtons>
             {selectedItem.current && (
-              <MenuHeaderTitle onClick={handleBackButtonClick} aria-label="Go back">
+              <MobileMenu.HeaderTitle onClick={handleBackButtonClick} aria-label="Go back">
                 {selectedItem.current.label}
-              </MenuHeaderTitle>
+              </MobileMenu.HeaderTitle>
             )}
           </MenuHeader>
-          <MenuContent>
-            <MenuContentGroup>
+          <MobileMenu.Content>
+            <MobileMenu.ContentGroup>
               {!selectedItem.current
                 ? navigationState.topLevelMenuItems.map((opt) => {
                     return (
-                      <MobileMenuItem
+                      <MobileMenu.Item
                         aria-label={opt.label}
                         id={opt.id}
                         key={opt.id}
@@ -572,7 +310,7 @@ export const PreSelectedItemMobileMenu: Story<
                 : [selectedItem.current].map((validOption) =>
                     validOption.children.map((child) => {
                       return (
-                        <MobileMenuItem
+                        <MobileMenu.Item
                           aria-label={child.label}
                           id={child.id}
                           key={child.id}
@@ -588,12 +326,12 @@ export const PreSelectedItemMobileMenu: Story<
                       )
                     })
                   )}
-            </MenuContentGroup>
+            </MobileMenu.ContentGroup>
             {args.hasRootLevelItems && (
-              <MenuContentGroup>
+              <MobileMenu.ContentGroup>
                 {ROOT_OPTIONS.map((opt) => {
                   return (
-                    <MobileMenuItem
+                    <MobileMenu.Item
                       key={opt.id}
                       id={opt.id}
                       value={opt.value}
@@ -604,15 +342,15 @@ export const PreSelectedItemMobileMenu: Story<
                     />
                   )
                 })}
-              </MenuContentGroup>
+              </MobileMenu.ContentGroup>
             )}
             {(args.hasServicePointsItem || args.hasLanguageSelection) && (
-              <MenuContentGroup>
+              <MobileMenu.ContentGroup>
                 {args.hasServicePointsItem && (
-                  <MenuServicePoints title={args.servicePointsItem.title} href={args.servicePointsItem.href} />
+                  <MobileMenu.ServicePoints title={args.servicePointsItem.title} href={args.servicePointsItem.href} />
                 )}
                 {args.hasLanguageSelection && (
-                  <MobileMenuLanguageSelection
+                  <MobileMenu.LanguageSelection
                     supportedLanguages={supportedLanguages}
                     languageLabel="Language"
                     language={locale}
@@ -620,9 +358,9 @@ export const PreSelectedItemMobileMenu: Story<
                     aria-label="Selection of languages"
                   />
                 )}
-              </MenuContentGroup>
+              </MobileMenu.ContentGroup>
             )}
-          </MenuContent>
+          </MobileMenu.Content>
         </MobileMenu>
         <Button ref={buttonRef} size="sm" onClick={handleOpen}>
           Open menu
@@ -632,8 +370,10 @@ export const PreSelectedItemMobileMenu: Story<
   }
 
   return (
-    <MenuStateWrapper>
+    <MobileMenu.StateWrapper>
       {({ isOpen, setIsOpen }) => <MenuWrapper isOpen={isOpen} setIsOpen={setIsOpen} />}
-    </MenuStateWrapper>
+    </MobileMenu.StateWrapper>
   )
 }
+
+export default PreSelectedItemMobileMenu

@@ -15,7 +15,7 @@
     "clean": "gatsby clean"
   },
   "dependencies": {
-    "@postidigital/posti-components": "^28.0.0",
+    "@postidigital/posti-components": "^30.0.2",
     "@postidigital/posti-theme": "^3.0.1",
     "babel-plugin-styled-components": "^2.0.7",
     "gatsby": "^4.23.0",
